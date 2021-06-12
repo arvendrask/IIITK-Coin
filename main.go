@@ -1,24 +1,24 @@
 package main
-import(
 
-	"database/sql"
-	_"github.com/mattn/go-sqlite3"
-	"fmt"
+import (
+	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
+	"log"
 )
-type data struct {
-	roll_no int
-	name string
-}
-func Ins(d1 data, db *sql.DB){
-	statement,_:= db.Prepare("INSERT INTO roll (roll_no, name) VALUES(?,?)")
-	statement.Exec(d1.roll_no, d1.name)
-}
+var(
+	router = gin.Default()
+)
 func main() {
-	fmt.Println("Hello")
-	database,_:= sql.Open("sqlite3","./mydb.db")
-	statement,_:= database.Prepare("CREATE TABLE IF NOT EXISTS roll (roll_no INTEGER, name TEXT)")
-	statement.Exec()
-	Ins(data{190183, "arvendra"}, database)
+	//router.POST("/signup", Signup )
+	//log.Fatal(router.Run(":8080"))
 
-	//fmt.Printf("%T",database)
+	router.POST("/login",Login)
+	router.GET("/secretpage",Secretpage)
+	log.Fatal(router.Run(":8080"))
+
+	//router.POST("/secretpage",Secretpage)
+	//log.Fatal(router.Run(":8080"))
+
+
+
 }
