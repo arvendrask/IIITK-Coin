@@ -36,12 +36,7 @@ func Secretpage(c *gin.Context){
 			if !checkAudience {
 				return nil, fmt.Errorf(("invalid aud"))
 			}
-			/*	// verify iss claim
-				iss := "jwtgo.io"
-				checkIss := token.Claims.(jwt.MapClaims).VerifyIssuer(iss, false)
-				if !checkIss {
-					return nil, fmt.Errorf(("invalid iss"))
-				}*/
+
 
 			return MySigningKey, nil
 		})

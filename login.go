@@ -8,7 +8,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 var db *sql.DB
@@ -37,24 +36,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	/*result,err1 := db.QueryContext(ctx,"SELECT Password FROM users WHERE Username=?", u.Username)
-	if err1 != nil {
-		// If there is an issue with the database, return a 500 error
-		c.JSON(http.StatusInternalServerError, "12")
-		return
-	}
-	var storedu User
-	err = result.Scan(&storedu.Password)
-	if err != nil {
-		// If an entry with the username does not exist, send an "Unauthorized"(401) status
-		if err == sql.ErrNoRows {
-			c.JSON(http.StatusUnauthorized,"13")
-			return
-		}
-		// If the error is of any other type, send a 500 status
-		c.JSON(http.StatusInternalServerError,"14")
-		return
-	}*/
+
 	if err = bcrypt.CompareHashAndPassword([]byte(pwd), []byte(u.Password)); err != nil {
 		// If the two passwords don't match, return a 401 status
 		c.JSON(http.StatusUnauthorized,"Provided Password is Incorrect")
@@ -68,8 +50,6 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, "Error in creating Token")
 		return
 	}
-	strArr := strings.Split(token, " ")
-	c.JSON(http.StatusOK, strArr)
 	c.JSON(http.StatusOK, token)
 }
 
