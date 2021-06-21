@@ -1,66 +1,36 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	_ "github.com/twinj/uuid"
-	"net/http"
-	"os"
 )
 
-type info struct {
-	Password string `json:"Password", db:"Password"`
-	Username string `json:"Username", db:"Username"`
-	RollNO int `json:"RollNO", db:"RollNO"`
-}
-var MySigningKey = []byte(os.Getenv("ACCESS_SECRET"))
-var u info
+func Secretpage(c *gin.Context) {
+	MySigningKey := []byte(os.Getenv("ACCESS"))
 
-func Secretpage(c *gin.Context){
-	err := c.ShouldBindJSON(&u);
+	tokenstr := c.Request.Header.Get("Authorization")
+
+	token, err := jwt.Parse(tokenstr, func(t *jwt.Token) (interface{}, error) {
+		//c.JSON(200,MySigningKey)
+		if t.Method.Alg() != "HS256" {
+			return []byte(""), fmt.Errorf("Invalid Signing Method1")
+		}
+
+		return MySigningKey, nil
+	})
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	if !token.Valid {
+		c.JSON(http.StatusUnprocessableEntity, "Invalid Token Provided2")
 		return
 	}
-	f:=0
-	if c.Request.Header.Get("Authorization") != "" {
+	roll := token.Claims.(jwt.MapClaims)["Roll_NO"]
+	c.JSON(200, roll)
 
-		token, err := jwt.Parse(string(c.Request.Header.Get("Authorization")[0]), func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf(("Invalid Signing Method"))
-			}
-			aud := u.Username
-			checkAudience := token.Claims.(jwt.MapClaims).VerifyAudience(aud, false)
-			if !checkAudience {
-				return nil, fmt.Errorf(("invalid aud"))
-			}
-
-
-			return MySigningKey, nil
-		})
-		if err != nil {
-			c.JSON(http.StatusUnprocessableEntity, err.Error())
-		}
-
-		if token.Valid {
-			f=1
-		}
-
-	} else {
-		c.JSON(http.StatusUnprocessableEntity, "No Authorization Token provided")
-	}
-	if f==1 {
-		db, err = sql.Open("sqlite3", "./mydb.db")
-		if err != nil {
-			panic(err)
-		}
-		row := db.QueryRow("SELECT Password FROM users WHERE Username=$1", u.Username)
-		if err := row.Scan(&u.RollNO); err != nil {
-			c.JSON(http.StatusUnprocessableEntity, "NO user found")
-			return
-		}
-		c.JSON(200, u)
-	}
 }
