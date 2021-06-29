@@ -20,7 +20,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	statement, error := db.Prepare("CREATE TABLE IF NOT EXISTS users (Username TEXT, Password TEXT, RollNO INTEGER PRIMARY KEY, Coins INTEGER )")
+	statement, error := db.Prepare("CREATE TABLE IF NOT EXISTS users (Username TEXT, Password TEXT, RollNO INTEGER PRIMARY KEY, Coins FLOAT, Role TEXT )")
 	statement.Exec()
 	if error != nil {
 		// If there is any issue with inserting into the database, return a 500 error
@@ -28,7 +28,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 16)
-	statement, error = db.Prepare("INSERT INTO users (Username, Password, RollNO, Coins) VALUES(?,?,?,0)")
+	statement, error = db.Prepare("INSERT INTO users (Username, Password, RollNO, Coins, Roll) VALUES(?,?,?,0,'General')")
 	statement.Exec(u.Username, string(hashedPassword), u.RollNO)
 
 	if err != nil {
