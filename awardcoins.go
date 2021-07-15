@@ -3,12 +3,47 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
+	"strconv"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Awardcoins(c *gin.Context) {
+	MySigningKey := []byte(os.Getenv("ACCESS"))
+
+	tokenstr := c.Request.Header.Get("Authorization")
+
+	token, err := jwt.Parse(tokenstr, func(t *jwt.Token) (interface{}, error) {
+		//c.JSON(200,MySigningKey)
+		if t.Method.Alg() != "HS256" {
+			return []byte(""), fmt.Errorf("Invalid Signing Method1")
+		}
+
+		return MySigningKey, nil
+	})
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err.Error())
+	}
+	if !token.Valid {
+		c.JSON(http.StatusUnprocessableEntity, "Invalid Token Provided2")
+		return
+	}
+	roll := token.Claims.(jwt.MapClaims)["Roll_NO"]
+	tmpr,_ := strconv.Atoi(fmt.Sprintf("%v", roll))
+	row := db.QueryRow("SELECT Role FROM users WHERE RollNO=$1", tmpr)
+	var role string
+	if err := row.Scan(&role); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, "Error in Database")
+		return
+	}
+	if role!="admin" {
+		c.JSON(http.StatusUnprocessableEntity, "Not Authorized")
+		return
+	}
 	var th transaction
 	if err := c.ShouldBindJSON(&th); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, "Invalid json provided")

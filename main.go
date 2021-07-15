@@ -24,7 +24,10 @@ func main() {
 	router.GET("/secretpage", Secretpage)
 	router.POST("/awardcoins", Awardcoins)
 	router.GET("/getcoins", Getcoins)
+	router.GET("/redeemadminlist", Redeemadminlist)
+	router.POST("/redeemuser", Redeemuser)
 	router.POST("/transfercoins", Transfercoins)
+	router.POST("/redeemadminaction", Redeemadminaction)
 	log.Fatal(router.Run(":8080"))
 
 }

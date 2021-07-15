@@ -28,7 +28,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 16)
-	statement, error = db.Prepare("INSERT INTO users (Username, Password, RollNO, Coins, Roll) VALUES(?,?,?,0,'General')")
+	statement, error = db.Prepare("INSERT INTO users (Username, Password, RollNO, Coins, Role) VALUES(?,?,?,0,'General')")
 	statement.Exec(u.Username, string(hashedPassword), u.RollNO)
 
 	if err != nil {
